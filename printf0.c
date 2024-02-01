@@ -1,125 +1,61 @@
 #include "main.h"
 
 /**
- * write_string_and_count - Writes a string and counts characters.
- * @text: String to be written.
+ * _printf - A function that produces output according to a format.
+ * @format: A character string composed of zero or more directives.
  *
- * Return: Number of characters written.
+ * Return: The number of characters printed.
  */
-int write_string_and_count(const char *text)
+int _printf(const char *format, ...)
 {
-	int strLength = 0;
+        va_list arg_list;
+        int index, printed_chars = 0;
+        char c;
 
-	while (text[strLength] != '\0')
-	{
-		putchar(text[strLength]);
-		strLength++;
-	}
+        va_start(arg_list, format);
 
-	return (strLength);
-}
+        for (index = 0; format[index] != '\0'; index++)
+        {
+                if (format[index] != '%')
+                {
+                        c = format[index];
+                        write(1, &c, 1);
+                        printed_chars++;
+                }
+                else
+                {
+                        index++;
 
-/**
- * extract_next_arg - Extracts arguments based on the type specifier.
- * @parameters: List of arguments.
- * @argType: Type of argument ('c' for char, 's' for string).
- *
- * Return: The next argument of the given type.
- */
-void *extract_next_arg(va_list *parameters, char argType)
-{
-	if (argType == 'c' || argType == 'd' || argType == 'i')
-		return ((void *)(long)va_arg(*parameters, int));
-	else if (argType == 's')
-		return (va_arg(*parameters, char *));
-	else
-		return (NULL);
-}
+                        switch (format[index])
+                        {
+                                case 'c':
+                                        c = (char)va_arg(arg_list, int);
+                                        write(1, &c, 1);
+                                        printed_chars++;
+                                        break;
+                                case 's':
+                                {
+                                    char *str = va_arg(arg_list, char *);
+                                    printed_chars += write(1, str, strlen(str));
+                                    break;
+                                }
+                                case '%':
+                                        c = '%';
+                                        write(1, &c, 1);
+                                        printed_chars++;
+                                        break;
+                        }
+                }
+        }
 
-/**
- * handle_format_specifier - Handles the format specifier.
- * @fmt: Format string.
- * @parameters: List of arguments.
- *
- * Return: Number of characters printed.
- */
-int handle_format_specifier(const char **fmt, va_list *parameters)
-{
-	int numChars = 0;
-	char singleCharStr[2] = {0, '\0'};
-	char integerStr[12];
+        va_end(arg_list);
 
-	if (**fmt == 'c')
-	{
-		char arg = (char)(long)extract_next_arg(parameters, **fmt);
-
-		singleCharStr[0] = arg;
-		numChars += write_string_and_count(singleCharStr);
-	}
-	else if (**fmt == 'd' || **fmt == 'i')
-	{
-		sprintf(integerStr, "%d", (int)(long)extract_next_arg(parameters, **fmt));
-		numChars += write_string_and_count(integerStr);
-	}
-	else if (**fmt == 's')
-	{
-		numChars += write_string_and_count(extract_next_arg(parameters, 's'));
-	}
-	else if (**fmt == '%')
-	{
-		singleCharStr[0] = '%';
-		numChars += write_string_and_count(singleCharStr);
-	}
-
-	(*fmt)++;
-
-	return (numChars);
-}
-
-/**
- * _printf - Printf function.
- * @fmt: Format string.
- *
- * Return: Number of characters printed.
- */
-int _printf(const char *fmt, ...)
-{
-	va_list parameters;
-	int totalCount = 0;
-	char singleCharStr[2] = {0, '\0'};
-
-	if (fmt == NULL)
-		return (-1);
-
-	va_start(parameters, fmt);
-
-	while (*fmt != '\0')
-	{
-		if (*fmt == '%')
-		{
-			fmt++;
-			totalCount += handle_format_specifier(&fmt, &parameters);
-		}
-		else
-		{
-			singleCharStr[0] = *fmt;
-			totalCount += write_string_and_count(singleCharStr);
-			fmt++;
-		}
-	}
-
-	va_end(parameters);
-
-	return (totalCount);
+        return (printed_chars);
 }
 
 int main(void)
 {
-	_printf("Character: %c\n", 'A');
-	_printf("String: %s\n", "Hello, world!");
-	_printf("Percent sign: %%\n");
-
-	return (0);
-
+    _printf("I'm not going anywhere. You can print that wherever you want to. I'm here and I'm a Spur for life\n");
+    return (0);
 }
 

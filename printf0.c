@@ -2,107 +2,114 @@
 
 /**
  * write_string_and_count - Writes a string and counts characters.
- * @str: String to be written.
+ * @text: String to be written.
  *
  * Return: Number of characters written.
  */
-int write_string_and_count(const char *str)
+int write_string_and_count(const char *text)
 {
-	int length = 0;
+	int strLength = 0;
 
-	while (str[length] != '\0')
+	while (text[strLength] != '\0')
 	{
-		putchar(str[length]);
-		length++;
+		putchar(text[strLength]);
+		strLength++;
 	}
 
-	return (length);
+	return (strLength);
 }
 
 /**
- * extract_next_argument - Extracts arguments based on the type specifier.
- * @args: List of arguments.
- * @type: Type of argument ('c' for char, 's' for string).
+ * extract_next_arg - Extracts arguments based on the type specifier.
+ * @parameters: List of arguments.
+ * @argType: Type of argument ('c' for char, 's' for string).
  *
  * Return: The next argument of the given type.
  */
-void *extract_next_argument(va_list *args, char type)
+void *extract_next_arg(va_list *parameters, char argType)
 {
-	if (type == 'c' || type == 'd' || type == 'i')
-		return ((void *)(long)va_arg(*args, int));
-	else if (type == 's')
-		return (va_arg(*args, char *));
+	if (argType == 'c' || argType == 'd' || argType == 'i')
+		return ((void *)(long)va_arg(*parameters, int));
+	else if (argType == 's')
+		return (va_arg(*parameters, char *));
 	else
 		return (NULL);
 }
 
 /**
  * handle_format_specifier - Handles the format specifier.
- * @format: Format string.
- * @args: List of arguments.
+ * @fmt: Format string.
+ * @parameters: List of arguments.
  *
  * Return: Number of characters printed.
  */
-int handle_format_specifier(const char **format, va_list *args)
+int handle_format_specifier(const char **fmt, va_list *parameters)
 {
-	int count = 0;
-	char buffer[2] = {0, '\0'};
-	char str[12];
+	int numChars = 0;
+	char singleCharStr[2] = {0, '\0'};
+	char integerStr[12];
 
-	if (**format == 'c' || **format == 'd' || **format == 'i')
+	if (**fmt == 'c')
 	{
-		sprintf(str, "%d", (int)(long)extract_next_argument(args, **format));
-		count += write_string_and_count(str);
+		char arg = (char)(long)extract_next_arg(parameters, **fmt);
+
+		singleCharStr[0] = arg;
+		numChars += write_string_and_count(singleCharStr);
 	}
-	else if (**format == 's')
+	else if (**fmt == 'd' || **fmt == 'i')
 	{
-		count += write_string_and_count(extract_next_argument(args, 's'));
+		sprintf(integerStr, "%d", (int)(long)extract_next_arg(parameters, **fmt));
+		numChars += write_string_and_count(integerStr);
 	}
-	else if (**format == '%')
+	else if (**fmt == 's')
 	{
-		buffer[0] = '%';
-		count += write_string_and_count(buffer);
+		numChars += write_string_and_count(extract_next_arg(parameters, 's'));
+	}
+	else if (**fmt == '%')
+	{
+		singleCharStr[0] = '%';
+		numChars += write_string_and_count(singleCharStr);
 	}
 
-	(*format)++;
+	(*fmt)++;
 
-	return (count);
+	return (numChars);
 }
 
 /**
  * _printf - Printf function.
- * @format: Format string.
+ * @fmt: Format string.
  *
  * Return: Number of characters printed.
  */
-int _printf(const char *format, ...)
+int _printf(const char *fmt, ...)
 {
-	va_list args;
-	int count = 0;
-	char buffer[2] = {0, '\0'};
+	va_list parameters;
+	int totalCount = 0;
+	char singleCharStr[2] = {0, '\0'};
 
-	if (format == NULL)
+	if (fmt == NULL)
 		return (-1);
 
-	va_start(args, format);
+	va_start(parameters, fmt);
 
-	while (*format != '\0')
+	while (*fmt != '\0')
 	{
-		if (*format == '%')
+		if (*fmt == '%')
 		{
-			format++;
-			count += handle_format_specifier(&format, &args);
+			fmt++;
+			totalCount += handle_format_specifier(&fmt, &parameters);
 		}
 		else
 		{
-			buffer[0] = *format;
-			count += write_string_and_count(buffer);
-			format++;
+			singleCharStr[0] = *fmt;
+			totalCount += write_string_and_count(singleCharStr);
+			fmt++;
 		}
 	}
 
-	va_end(args);
+	va_end(parameters);
 
-	return (count);
+	return (totalCount);
 }
 

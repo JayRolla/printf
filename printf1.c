@@ -1,84 +1,111 @@
 #include "main.h"
 
-
-
-/* function to write a string and count the characters written */
+/**
+ * write_string_and_count - Writes a string and counts characters.
+ * @str: String to be written.
+ * @count: Pointer to the count of characters.
+ *
+ * Return: Length of the string.
+ */
 int write_string_and_count(const char *str, int *count)
 {
-    int length = 0;
-/* calculate the length of the string */
-    while (str[length] != '\0')
-    {
-        length++;
-    }
+	int length = 0;
 
-    /* write the string to the standard output */
-    *count += write(1, str, length);
+	while (str[length] != '\0')
+	{
+		length++;
+	}
 
-    return length;
+	*count += write(1, str, length);
+
+	return (length);
 }
 
-/* function to extract the next argument based on the type specifier */
+/**
+ * extract_next_argument - Extracts arguments based on the type specifier.
+ * @args: List of arguments.
+ * @type: Type of argument ('c' for char, 's' for string).
+ *
+ * Return: The next argument of the given type.
+ */
 void *extract_next_argument(va_list *args, char type)
 {
-    /* check the type specifier and extract the corresponding argument */
-    if (type == 'c')
-        return (void *)(long)va_arg(*args, int);
-    else if (type == 's')
-        return va_arg(*args, char *);
-    else if (type == 'd' || type == 'i')
-        return (void *)(long)va_arg(*args, int);
-    else
-        return NULL; /* add support for additional types as needed */
+	if (type == 'c' || type == 'd' || type == 'i')
+		return ((void *)(long)va_arg(*args, int));
+	else if (type == 's')
+		return (va_arg(*args, char *));
+	else
+		return (NULL);
 }
 
-/* printf function for task 2 */
+/**
+ * handle_format_specifier - Handles the format specifier.
+ * @format: Format string.
+ * @args: List of arguments.
+ * @count: Pointer to the count of characters.
+ *
+ * Return: Number of characters printed.
+ */
+int handle_format_specifier(const char **format, va_list *args, int *count)
+{
+	char buffer[2] = {0, '\0'};
+	char num_str[12];
+
+	if (*format == 'c')
+	{
+		buffer[0] = (char)(long)extract_next_argument(args, 'c');
+		*count += write_string_and_count(buffer, count);
+	}
+	else if (*format == 's')
+	{
+		*count += write_string_and_count(extract_next_argument(args, 's'), count);
+	}
+	else if (*format == 'd' || *format == 'i')
+	{
+		int num = (int)(long)extract_next_argument(args, 'd');
+
+		sprintf(num_str, "%d", num);
+		*count += write_string_and_count(num_str, count);
+
+	}
+
+	return (*count);
+}
+
+/**
+ * _printf - Printf function.
+ * @format: Format string.
+ *
+ * Return: Number of characters printed.
+ */
 int _printf(const char *format, ...)
 {
-    va_list args;
-    int count = 0;
-    char buffer[2] = {0, '\0'};
+	va_list args;
+	int count = 0;
+	char buffer[2] = {0, '\0'};
 
-    /* check if the format string is not NULL */
-    if (format == NULL)
-        return -1;
+	if (format == NULL)
+		return (-1);
 
-    /* start the variable argument list */
-    va_start(args, format);
+	va_start(args, format);
 
-    /* iterate through the format string */
-    while (*format != '\0')
-    {
-        /* check for the '%' character indicating a format specifier */
-        if (*format == '%')
-        {
-            format++;
-            /* check the type specifier and print the corresponding argument */
-            if (*format == 'c') {
-                buffer[0] = (char)(long)extract_next_argument(&args, 'c');
-                count += write_string_and_count(buffer, &count);
-            } else if (*format == 's') {
-                count += write_string_and_count(extract_next_argument(&args, 's'), &count);
-            } else if (*format == 'd' || *format == 'i') {
-                int num = (int)(long)extract_next_argument(&args, 'd');
-                char num_str[12];  /* assuming 32-bit int */
-                sprintf(num_str, "%d", num);
-                count += write_string_and_count(num_str, &count);
-            }
-        }
-        else
-        {
-            /* if not a format specifier, print the character */
-            buffer[0] = *format;
-            count += write_string_and_count(buffer, &count);
-        }
-        format++;
-    }
+	while (*format != '\0')
+	{
+		if (*format == '%')
+		{
+			format++;
+			count += handle_format_specifier(&format, &args, &count);
+		}
+		else
+		{
+			buffer[0] = *format;
+			count += write_string_and_count(buffer, &count);
+		}
+		format++;
+	}
 
-    /* end the variable argument list */
-    va_end(args);
+	va_end(args);
 
-    /* return the total number of characters printed */
-    return count;
+	return (count);
 }
 

@@ -1,13 +1,12 @@
 #ifndef MAIN_H
 #define MAIN_H
 #include <stdarg.h>
-#include <unistd.h>
 #include <stdio.h>
-#include <stdlib.h>
-/* prototypes */
+#include <string.h>
+
 int _printf(const char *format, ...);
-int write_string_and_count(const char *str);
-void *extract_next_argument(va_list *args, char type);
+void *extract_next_arg(va_list *parameters, char argType);
+int handle_format_specifier(const char **fmt, va_list *parameters);
 
 #endif /* MAIN_H */
 

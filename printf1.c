@@ -1,111 +1,72 @@
+#include <stdio.h>
 #include "main.h"
 
 /**
- * write_string_and_count - Writes a string and counts characters.
- * @str: String to be written.
- * @count: Pointer to the count of characters.
+ * _printf - A function that produces output according to a format.
+ * @format: A character string composed of zero or more directives.
  *
- * Return: Length of the string.
- */
-int write_string_and_count(const char *str, int *count)
-{
-	int length = 0;
-
-	while (str[length] != '\0')
-	{
-		length++;
-	}
-
-	*count += write(1, str, length);
-
-	return (length);
-}
-
-/**
- * extract_next_argument - Extracts arguments based on the type specifier.
- * @args: List of arguments.
- * @type: Type of argument ('c' for char, 's' for string).
- *
- * Return: The next argument of the given type.
- */
-void *extract_next_argument(va_list *args, char type)
-{
-	if (type == 'c' || type == 'd' || type == 'i')
-		return ((void *)(long)va_arg(*args, int));
-	else if (type == 's')
-		return (va_arg(*args, char *));
-	else
-		return (NULL);
-}
-
-/**
- * handle_format_specifier - Handles the format specifier.
- * @format: Format string.
- * @args: List of arguments.
- * @count: Pointer to the count of characters.
- *
- * Return: Number of characters printed.
- */
-int handle_format_specifier(const char **format, va_list *args, int *count)
-{
-	char buffer[2] = {0, '\0'};
-	char num_str[12];
-
-	if (*format == 'c')
-	{
-		buffer[0] = (char)(long)extract_next_argument(args, 'c');
-		*count += write_string_and_count(buffer, count);
-	}
-	else if (*format == 's')
-	{
-		*count += write_string_and_count(extract_next_argument(args, 's'), count);
-	}
-	else if (*format == 'd' || *format == 'i')
-	{
-		int num = (int)(long)extract_next_argument(args, 'd');
-
-		sprintf(num_str, "%d", num);
-		*count += write_string_and_count(num_str, count);
-
-	}
-
-	return (*count);
-}
-
-/**
- * _printf - Printf function.
- * @format: Format string.
- *
- * Return: Number of characters printed.
+ * Return: The number of characters printed.
  */
 int _printf(const char *format, ...)
 {
-	va_list args;
-	int count = 0;
-	char buffer[2] = {0, '\0'};
+        va_list arg_list;
+        int index, printed_chars = 0;
+        char c;
 
-	if (format == NULL)
-		return (-1);
+        va_start(arg_list, format);
 
-	va_start(args, format);
+        for (index = 0; format[index] != '\0'; index++)
+        {
+                if (format[index] != '%')
+                {
+                        c = format[index];
+                        write(1, &c, 1);
+                        printed_chars++;
+                }
+                else
+                {
+                        index++;
 
-	while (*format != '\0')
-	{
-		if (*format == '%')
-		{
-			format++;
-			count += handle_format_specifier(&format, &args, &count);
-		}
-		else
-		{
-			buffer[0] = *format;
-			count += write_string_and_count(buffer, &count);
-		}
-		format++;
-	}
+                        switch (format[index])
+                        {
+                                case 'c':
+                                        c = (char)va_arg(arg_list, int);
+                                        write(1, &c, 1);
+                                        printed_chars++;
+                                        break;
+                                case 's':
+                                {
+                                    char *str = va_arg(arg_list, char *);
+                                    printed_chars += write(1, str, strlen(str));
+                                    break;
+                                }
+                                case 'd':
+                                case 'i':
+                                {
+                                    int num = va_arg(arg_list, int);
+                                    char str_num[12]; /* Buffer big enough for an int. */
+                                    sprintf(str_num, "%d", num); /* Convert the int to a string. */
+                                    printed_chars += write(1, str_num, strlen(str_num));
+                                    break;
+                                }
+                                case '%':
+                                        c = '%';
+                                        write(1, &c, 1);
+                                        printed_chars++;
+                                        break;
+                        }
+                }
+        }
 
-	va_end(args);
+        va_end(arg_list);
 
-	return (count);
+        return (printed_chars);
+}
+
+int main(void)
+{
+    _printf("Education is when you read the fine print. Experience is what you get if you don't\n");
+    _printf("The number is: %d\n", 42);
+    return (0);
 }
 

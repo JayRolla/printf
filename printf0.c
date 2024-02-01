@@ -113,3 +113,13 @@ int _printf(const char *fmt, ...)
 	return (totalCount);
 }
 
+int main(void)
+{
+	_printf("Character: %c\n", 'A');
+	_printf("String: %s\n", "Hello, world!");
+	_printf("Percent sign: %%\n");
+
+	return (0);
+
+}
+
